@@ -56,7 +56,7 @@ jobs:
                 | {
                     cache_key: $job.pipeline.sha,
                     cache_enabled: (
-                      ["secret_detection", "upload-internal-release-r2"]
+                      ["secret_detection", "upload-internal-release-r2", "build-custom-env"]
                       | index($job.name)
                       | not
                     )
