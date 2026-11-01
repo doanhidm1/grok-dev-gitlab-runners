@@ -76,6 +76,7 @@ jobs:
             --token "$GITLAB_RUNNER_TOKEN" \
             --name "$runner_name" \
             --executor docker \
+            --docker-privileged \
             --docker-image alpine:3.20 \
             --docker-volumes "$GROK_CACHE_DIR:/cache" \
             --max-builds 1 \
