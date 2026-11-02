@@ -23,7 +23,8 @@ jobs:
       GITLAB_API_URL: https://gitlab.com/api/v4
       GITLAB_PROJECT_ID: '80336723'
       GITLAB_READ_TOKEN: ${{ secrets.GITLAB_READ_TOKEN }}
-      RUNNER_TAG: grokauto-github-linux
+      RUNNER_TAG: grokauto-docker
+      COMPAT_RUNNER_TAG: grokauto-github-linux
       RUNNER_WORKFLOW: gitlab-runner-linux.yml
       MAX_ACTIVE_RUNNERS: '4'
 
@@ -42,15 +43,15 @@ jobs:
               "$GITLAB_API_URL/projects/$GITLAB_PROJECT_ID/jobs?scope%5B%5D=pending&per_page=100" \
               -o "$pending_json"
 
-            jq -e --arg tag "$RUNNER_TAG" '
+            jq -e --arg tag "$RUNNER_TAG" --arg compat_tag "$COMPAT_RUNNER_TAG" '
               type == "array" and
               all(.[]; (.tag_list | type) == "array")
             ' "$pending_json" >/dev/null
 
             mapfile -t pending_jobs < <(
-              jq -c --arg tag "$RUNNER_TAG" '
+              jq -c --arg tag "$RUNNER_TAG" --arg compat_tag "$COMPAT_RUNNER_TAG" '
                 .[]
-                | select((.tag_list // []) | index($tag))
+                | select((.tag_list // []) | any(. == $tag or . == $compat_tag))
                 | select((.pipeline.sha // "") | test("^[0-9a-f]{40,64}$"))
                 | . as $job
                 | {
